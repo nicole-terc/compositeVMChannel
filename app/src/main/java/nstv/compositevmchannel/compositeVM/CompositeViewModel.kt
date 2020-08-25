@@ -8,19 +8,13 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 
 
-open class CompositeViewModel<S, E>(private val delegates: List<ViewModelDelegate<S, E>>) : ViewModel() {
+open class CompositeViewModel<S, E>(
+    private val delegates: List<ViewModelDelegate<S, E>>
+) : ViewModel() {
     val state: Channel<S> = Channel()
 
     init {
         registerDelegates()
-    }
-
-    fun send(event: E) {
-        viewModelScope.launch {
-            delegates.any {
-                it.onEvent(event)
-            }
-        }
     }
 
     private fun registerDelegates() {
@@ -35,10 +29,19 @@ open class CompositeViewModel<S, E>(private val delegates: List<ViewModelDelegat
         }
     }
 
+    fun send(event: E) {
+        viewModelScope.launch {
+            delegates.any {
+                it.onEvent(event)
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         delegates.forEach {
             it.clear()
         }
+        state.close()
     }
 }
