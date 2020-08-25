@@ -1,12 +1,18 @@
 package nstv.compositevmchannel.di
 
 import android.app.Application
+import androidx.room.Room
 import com.google.gson.Gson
 import nstv.compositevmchannel.BuildConfig
 import nstv.compositevmchannel.compositeVM.delegate.LoadViewModelDelegate
+import nstv.compositevmchannel.compositeVM.delegate.UpdateFavoriteViewModelDelegate
 import nstv.compositevmchannel.data.DataApi
+import nstv.compositevmchannel.data.favoriteDB.DB_NAME
+import nstv.compositevmchannel.data.favoriteDB.FavoriteDataBase
 import nstv.compositevmchannel.list.ListCompositeViewModel
+import nstv.compositevmchannel.useCase.GetFavoritesUseCase
 import nstv.compositevmchannel.useCase.LoadItemsUseCase
+import nstv.compositevmchannel.useCase.UpdateFavoriteStatusUseCase
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
@@ -26,7 +32,7 @@ internal class AppComponent : KoinComponent {
             androidLogger()
             androidContext(application)
             modules(
-                serviceModule,
+                dataModule,
                 useCaseModule,
                 delegateModule,
                 listModule
@@ -35,7 +41,7 @@ internal class AppComponent : KoinComponent {
     }
 }
 
-private val serviceModule = module {
+private val dataModule = module {
 
     single {
         val cacheSize = 10 * 1024 * 1024
@@ -60,21 +66,35 @@ private val serviceModule = module {
     single<DataApi> {
         get<Retrofit>().create(DataApi::class.java)
     }
+
+    single {
+        Room.databaseBuilder(get(), FavoriteDataBase::class.java, DB_NAME)
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+
+    single {
+        get<FavoriteDataBase>().favoriteDao()
+    }
 }
 
 private val useCaseModule = module {
     factory { LoadItemsUseCase(get()) }
+    factory { GetFavoritesUseCase(get()) }
+    factory { UpdateFavoriteStatusUseCase(get()) }
 }
 
 private val delegateModule = module {
     factory { LoadViewModelDelegate(get()) }
+    factory { UpdateFavoriteViewModelDelegate(get()) }
 }
 
 private val listModule = module {
     viewModel {
         ListCompositeViewModel(
             listOf(
-                get<LoadViewModelDelegate>()
+                get<LoadViewModelDelegate>(),
+                get<UpdateFavoriteViewModelDelegate>()
             )
         )
     }

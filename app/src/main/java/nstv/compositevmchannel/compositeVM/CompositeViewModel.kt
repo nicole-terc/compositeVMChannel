@@ -15,14 +15,6 @@ open class CompositeViewModel<S, E>(private val delegates: List<ViewModelDelegat
         registerDelegates()
     }
 
-    fun send(event: E) {
-        viewModelScope.launch {
-            delegates.any {
-                it.onEvent(event)
-            }
-        }
-    }
-
     private fun registerDelegates() {
         viewModelScope.launch {
             delegates.forEach { delegate ->
@@ -35,10 +27,19 @@ open class CompositeViewModel<S, E>(private val delegates: List<ViewModelDelegat
         }
     }
 
+    fun send(event: E) {
+        viewModelScope.launch {
+            delegates.any {
+                it.onEvent(event)
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         delegates.forEach {
             it.clear()
         }
+        state.close()
     }
 }

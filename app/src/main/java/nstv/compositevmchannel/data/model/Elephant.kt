@@ -11,5 +11,6 @@ data class Elephant(
     @SerializedName("fictional") val fictional: String,
     @SerializedName("image") val imageUrl: String,
     @SerializedName("note") val summary: String,
-    @SerializedName("wikilink") val wikiUrl: String
+    @SerializedName("wikilink") val wikiUrl: String,
+    val isFavorite: Boolean
 )
