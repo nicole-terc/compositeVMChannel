@@ -22,12 +22,10 @@ class LoadViewModelDelegate(
         state.offer(State.Loading)
 
         val items = loadItemsUseCase()
-
         if (items.isEmpty()) {
             state.offer(State.Error("Error fetching items"))
         } else {
             state.offer(State.ShowData(items))
         }
-
     }
 }

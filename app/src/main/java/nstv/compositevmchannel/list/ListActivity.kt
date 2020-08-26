@@ -9,6 +9,7 @@ import kotlinx.android.synthetic.main.activity_list.progressBar
 import kotlinx.android.synthetic.main.activity_list.itemsList
 import kotlinx.coroutines.launch
 import nstv.compositevmchannel.R
+import nstv.compositevmchannel.data.model.Event
 import nstv.compositevmchannel.data.model.State
 import org.koin.android.viewmodel.ext.android.viewModel
 
@@ -16,7 +17,7 @@ class ListActivity : AppCompatActivity() {
 
     private val viewModel: ListCompositeViewModel by viewModel()
 
-    lateinit var adapter: ListAdapter
+    private lateinit var adapter: ListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +25,11 @@ class ListActivity : AppCompatActivity() {
         adapter = ListAdapter()
         initView()
         observeViewModel()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.send(Event.Load)
     }
 
     private fun initView() {
